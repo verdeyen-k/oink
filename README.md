@@ -1,6 +1,6 @@
 # 🐷 Oink
 
-A game kind of like Pokémon, but you **merge pigs**! (Still being made. The **pig maker** is ready.)
+A game kind of like Pokémon, but you **merge pigs**! Open **`index.html`** to play against the computer.
 
 ## The elements
 
@@ -18,15 +18,41 @@ There are 9 elements. The first 8 go in a circle, and each one beats **the next 
 - No pig can have more than 2 elements, so 🔥💧 + 🌿 can't merge.
 - You start with 9 pigs, one of each element. Win a battle to get a new one-element pig.
 
-## Fighting (coming soon)
+## 🏠 The Pig Barn
 
-You play as your pig, seen from above. **WASD** to walk, **left click** to attack, **right click** to switch element.
-Play the computer (Very Easy to Insane) or friends online.
+- **👥 Pick team**: tap 3 pigs for your team.
+- **🔀 Merge pigs**: tap 2 pigs, then press Merge! You always keep at least 3 pigs.
+- Pick how good the computer is: Very Easy, Easy, Medium, Hard or Insane.
 
-- ⚔️ **Classic Fight**: a team of 3 pigs, 3 rounds, one pig each round. Best of 3 wins!
-- 🏁 **Marathon**: 2 to 8 racers on a 5-space racing court. Win a battle to move 1 space. First to the end wins!
-- 🐗 **Mega Boar**: your 3 pigs merge into one giant black boar with all their elements and 1 attack per element.
-  Boar vs boar!
+## ⚔️ Fighting
+
+You play as your pig, seen from above, in a grassy arena with rocks and bushes to hide behind.
+**WASD** (or arrows) to walk, the **mouse** to aim, **left click** to attack, **right click** (or Q) to switch element.
+On a phone: joystick, 💥 to attack (it aims for you), 🔄 to switch.
+
+Every pig has ❤️ 100. If your element beats theirs it does **double damage**, and if theirs beats yours it does **half**.
+After 90 seconds, the pig with more health left wins. Every battle you win gets you a 🎁 new one-element pig!
+
+| | Attack | |
+|---|---|---|
+| 🔥 | Fireball | fast |
+| ❄️ | Ice shard | slows them down |
+| 🌿 | Vine | short, holds them still |
+| 🪨 | Boulder | slow, big damage |
+| 🌪️ | Gust | pushes them back |
+| ⚡ | Zap | super fast, short |
+| 🌑 | Ghost ball | follows them a bit |
+| 💧 | Wave | wide splash |
+| ⚪ | Headbutt | up close |
+
+## 🎮 3 game modes
+
+- ⚔️ **Classic**: you vs a computer team of 3. Each round you see their pig and pick one of yours. Best of 3 wins!
+- 🏁 **Marathon**: 2 to 8 racers on a 5-space racing court. Each round racers pair up and fight. Win and you move 1 space.
+  First to the 🏁 wins! (If two finish in the same round, they tie.)
+- 🐗 **Mega Boar**: your 3 pigs merge into MEGOINK with all their elements and ❤️ 300. Boar vs boar!
+
+Online play is coming next.
 
 ## 🎨 The pig maker
 
@@ -48,5 +74,9 @@ Plain HTML + JavaScript, no build step.
 - `elements.js`: elements, who beats who, pig keys (`fire+water`, always in circle order) and merging.
 - `pigart.js`: the plain pig, the automatic animations (`animate(picture)`), and the save format for `pigs.js`.
 - `maker.html` / `maker.js`: the pig maker. Pigs are saved in `localStorage['oink-pigs-v1']`.
+- `rules.js`: damage, attacks, the pig barn and merging, computer teams, Marathon pairing.
+- `battle.js`: one fight (no drawing), stepped by `step(state, dt, inputs)`. `ai.js`: computer players.
+- `index.html` / `game.js`: the game screens and drawing. Saves in `localStorage` (`oink-save-v1`, `oink-team-v1`, ...).
+- `pigs.js`: the kid's pig drawings, exported from the maker.
 - Tests: `npm test` (Node 20, `node --test`).
-- Design: `docs/superpowers/specs/2026-11-24-oink-design.md`.
+- Design: `docs/superpowers/specs/` (the idea + the maker, and the game).

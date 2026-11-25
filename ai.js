@@ -16,10 +16,10 @@
     return best;
   }
 
-  function input(state, me, level, rng, mem) {
+  function input(state, me, level, rng, mem, dt = 1 / 30) {
     const L = LEVEL[level] || LEVEL.medium;
     const p = state.pigs[me], e = state.pigs[1 - me];
-    mem.t = (mem.t || 0) - 1 / 30;
+    mem.t = (mem.t || 0) - dt;
     if (mem.t <= 0) { // time to think again
       mem.t = L.think * (0.7 + rng() * 0.6);
       mem.err = (rng() * 2 - 1) * L.aimErr;
