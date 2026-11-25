@@ -98,7 +98,7 @@ test('pigs.js files: bad files are refused', () => {
   assert.throws(() => A.parsePigsFile('hello'));
   assert.throws(() => A.parsePigsFile('window.OINK_PIGS = [];'));
   const good = A.encodePig(A.plainPig('#ff6b3d'));
-  assert.throws(() => A.parsePigsFile(JSON.stringify({ 'fire+ice+plant+rock': good })));
+  assert.throws(() => A.parsePigsFile(JSON.stringify({ 'fire+ice+plant': good })));
   assert.throws(() => A.parsePigsFile(JSON.stringify({ fire: { palette: [] } })));
   assert.ok(E.allPigKeys().includes('fire'));
 });

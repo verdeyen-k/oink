@@ -16,7 +16,7 @@
   const CIRCLE = ELEMENTS.slice(0, 8).map(e => e.id);
   const BY_ID = Object.fromEntries(ELEMENTS.map(e => [e.id, e]));
   const ORDER = ELEMENTS.map(e => e.id);
-  const MAX_ELEMENTS = 3;
+  const MAX_ELEMENTS = 2;
   const MEGA = 'megaboar';
 
   function beats(a, b) {
@@ -41,7 +41,7 @@
     return out;
   }
 
-  // Merge two pigs: the new pig has all the elements of both. More than 3 is not allowed (null).
+  // Merge two pigs: the new pig has all the elements of both. More than 2 is not allowed (null).
   function mergeKey(a, b) {
     const ids = new Set([...keyElements(a), ...keyElements(b)]);
     return ids.size > MAX_ELEMENTS ? null : pigKey([...ids]);

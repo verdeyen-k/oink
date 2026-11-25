@@ -2,12 +2,12 @@ const test = require('node:test');
 const assert = require('node:assert');
 const E = require('../elements.js');
 
-test('129 pigs: 9 singles, 36 pairs, 84 triples', () => {
+test('45 pigs: 9 singles and 36 pairs (2 elements max)', () => {
   const keys = E.allPigKeys();
-  assert.strictEqual(keys.length, 129);
+  assert.strictEqual(keys.length, 45);
   const n = k => keys.filter(x => x.split('+').length === k).length;
-  assert.deepStrictEqual([n(1), n(2), n(3)], [9, 36, 84]);
-  assert.strictEqual(new Set(keys).size, 129);
+  assert.deepStrictEqual([n(1), n(2), n(3)], [9, 36, 0]);
+  assert.strictEqual(new Set(keys).size, 45);
 });
 
 test('each element beats only the next one around the circle', () => {
@@ -30,8 +30,10 @@ test('order does not matter', () => {
 });
 
 test('merging', () => {
-  assert.strictEqual(E.mergeKey('fire+water', 'fire+plant'), 'fire+plant+water');
-  assert.strictEqual(E.mergeKey('fire+water', 'ice+plant'), null);
+  assert.strictEqual(E.mergeKey('fire', 'water'), 'fire+water');
+  assert.strictEqual(E.mergeKey('fire+water', 'water'), 'fire+water');
+  assert.strictEqual(E.mergeKey('fire+water', 'fire+plant'), null);
+  assert.strictEqual(E.mergeKey('fire', 'ice+plant'), null);
   assert.strictEqual(E.mergeKey('fire', 'fire'), 'fire');
 });
 

@@ -16,10 +16,10 @@ build), and **the game comes after**. The game loads the `pigs.js` file the make
 - ⚪ Common beats nothing, and nothing beats it.
 
 ### Pigs and merging
-- A pig has 1, 2 or 3 elements. There's exactly one pig for every mix: 9 + 36 + 84 = **129 pigs**.
+- A pig has 1 or 2 elements (the kid changed it from 3 to 2). There's exactly one pig for every mix: 9 + 36 = **45 pigs**.
 - Merging two pigs makes one pig with both pigs' elements (🔥 + 💧 = 🔥💧). The two old pigs are used up.
-- You can't merge if the new pig would have more than 3 elements.
-- Pigs that share an element **can** merge: 🔥💧 + 🔥🌿 = 🔥💧🌿 (the shared element only counts once).
+- You can't merge if the new pig would have more than 2 elements.
+- A shared element only counts once: 🔥💧 + 💧 = 🔥💧.
 - Order doesn't matter: 🔥💧 and 💧🔥 are the same pig.
 - You start with 9 pigs, one of each element. Each battle you win gets you a new random one-element pig.
 - Your pigs are saved on your device.
@@ -34,7 +34,7 @@ build), and **the game comes after**. The game loads the `pigs.js` file the make
 1. **Classic Fight**: team of 3 pigs, 3 rounds, one pig per round, best of 3.
 2. **Marathon**: 2–8 racers on a 5-space racing court. Each round racers are paired up and fight. The winner moves
    1 space and the loser stays put. First to the end wins. You bring a team of 3 and pick one for each battle.
-3. **Mega Boar**: your 3 pigs merge into one huge black boar with all their elements (3–9 types), with 1 attack
+3. **Mega Boar**: your 3 pigs merge into one huge black boar with all their elements (up to 6 types), with 1 attack
    per element. It fights another Mega Boar (computer or online **(my call)**).
 
 The game itself (fighting, AI, online, modes) is **not** part of this build. It gets its own design later.
@@ -54,9 +54,9 @@ the future game) and `oink/pigart.js` (the automatic animations and the save for
 with no build step, Fredoka font and a chunky, colourful style like the other games.
 
 ### Layout
-- **Left: pig list.** 130 entries: 9 one-element pigs, 36 two-element pigs, 84 three-element pigs and the 🐗 Mega Boar,
+- **Left: pig list.** 46 entries: 9 one-element pigs, 36 two-element pigs and the 🐗 Mega Boar,
   in sections, each shown by its element icons and a little thumbnail. A ✅ marks pigs that are drawn, and a counter at the top
-  shows "12 / 130 drawn". You can filter the list by element.
+  shows "12 / 46 drawn". You can filter the list by element.
 - **Middle: drawing grid.** 32×32 pixel art, one picture per pig, facing right. Tools: pencil, eraser, fill bucket,
   colour picker (eyedropper), undo/redo, clear, mirror-flip. Palette: 16 starter colours that include each element's colour,
   plus a custom colour chooser. Transparent background shown as a checkerboard.

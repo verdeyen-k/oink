@@ -12,10 +12,10 @@ There are 9 elements. The first 8 go in a circle, and each one beats **the next 
 
 ## Pigs and merging
 
-- A pig has 1, 2 or 3 elements. There's one pig for every mix: **129 pigs**!
+- A pig has 1 or 2 elements. There's one pig for every mix: **45 pigs**!
 - Merge two pigs to make one pig with both pigs' elements: 🔥 + 💧 = 🔥💧. The two old pigs are used up.
-- Pigs that share an element can merge too: 🔥💧 + 🔥🌿 = 🔥💧🌿.
-- No pig can have more than 3 elements.
+- 🔥💧 + 💧 = 🔥💧 works too, because the water only counts once.
+- No pig can have more than 2 elements, so 🔥💧 + 🌿 can't merge.
 - You start with 9 pigs, one of each element. Win a battle to get a new one-element pig.
 
 ## Fighting (coming soon)
@@ -32,7 +32,7 @@ Play the computer (Very Easy to Insane) or friends online.
 
 Open **`maker.html`**.
 
-- Pick a pig from the list on the left (130: all 129 pigs plus the 🐗 Mega Boar). Use the element buttons to only show pigs with that element.
+- Pick a pig from the list on the left (46: all 45 pigs plus the 🐗 Mega Boar). Use the element buttons to only show pigs with that element.
 - Draw **one picture** of the pig, facing **right**. The bottom quarter of your drawing is the **legs** (below the pink dashed line).
 - The maker makes the 😐 **Idle**, 🚶 **Walk** and 💥 **Attack** animations by itself. Watch them on the right!
 - Tools: ✏️ pencil (B), 🧽 eraser (E, or right click), 🪣 fill (G), 💉 pick a colour (I), ↩️ undo (Ctrl+Z), ↪️ redo (Ctrl+Y), ↔️ flip, 🗑️ clear.

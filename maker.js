@@ -86,7 +86,7 @@
   }
   function buildList() {
     const list = $('list'); list.innerHTML = '';
-    const sections = [['One element', 1], ['Two elements', 2], ['Three elements', 3]];
+    const sections = [['One element', 1], ['Two elements', 2]];
     for (const [title, n] of sections) {
       const keys = E.allPigKeys().filter(k => E.keyElements(k).length === n && (!filter || E.keyElements(k).includes(filter)));
       if (!keys.length) continue;
