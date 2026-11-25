@@ -59,14 +59,24 @@
     return f;
   }
 
-  function animate(pic) {
-    // The legs are the bottom quarter of the drawing; back legs are the left half, front legs the right half.
+  function bounds(pic) {
     let minX = SIZE, maxX = -1, minY = SIZE, maxY = -1;
     for (let i = 0; i < CELLS; i++) if (pic[i]) {
       const x = i % SIZE, y = (i - x) / SIZE;
       minX = Math.min(minX, x); maxX = Math.max(maxX, x); minY = Math.min(minY, y); maxY = Math.max(maxY, y);
     }
-    const legTop = minY + Math.ceil((maxY - minY + 1) * 0.75);
+    return { minX, maxX, minY, maxY };
+  }
+  // The legs are the bottom quarter of the drawing: this is their first row (null for an empty picture).
+  function legLine(pic) {
+    const { minY, maxY } = bounds(pic);
+    return maxY < 0 ? null : minY + Math.ceil((maxY - minY + 1) * 0.75);
+  }
+
+  function animate(pic) {
+    // Back legs are the left half of the legs, front legs the right half.
+    const { minX, maxX } = bounds(pic);
+    const legTop = legLine(pic) ?? SIZE;
     const midX = Math.floor((minX + maxX + 1) / 2);
     const walkFrame = (spread, bob) => remap(pic, (x, y) =>
       y >= legTop ? [x + (x < midX ? -spread : spread), y] : [x, y + bob]);
@@ -134,7 +144,7 @@
     return pigs;
   }
 
-  const api = { SIZE, CELLS, ANIMS, OUTLINE, blankFrame, blankPig, isDrawn, plainPig, animate,
+  const api = { SIZE, CELLS, ANIMS, OUTLINE, blankFrame, blankPig, isDrawn, plainPig, animate, legLine,
     encodePig, decodePig, exportPigsFile, parsePigsFile, lighten, darken };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.OinkArt = api;

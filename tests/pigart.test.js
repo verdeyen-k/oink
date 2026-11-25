@@ -101,3 +101,10 @@ test('pigs.js files: bad files are refused', () => {
   assert.throws(() => A.parsePigsFile(JSON.stringify({ fire: { palette: [] } })));
   assert.ok(E.allPigKeys().includes('fire'));
 });
+
+test('legLine: the first row of legs is the bottom quarter of the drawing', () => {
+  const f = A.blankFrame();
+  for (let y = 10; y < 18; y++) f[y * 32 + 5] = '#ff0000'; // rows 10..17, 8 tall
+  assert.strictEqual(A.legLine(f), 16);
+  assert.strictEqual(A.legLine(A.blankFrame()), null);
+});

@@ -33,7 +33,7 @@ Play the computer (Very Easy to Insane) or friends online.
 Open **`maker.html`**.
 
 - Pick a pig from the list on the left (130: all 129 pigs plus the 🐗 Mega Boar). Use the element buttons to only show pigs with that element.
-- Draw **one picture** of the pig, facing **right**. Everything below the pink dashed line is the **legs**.
+- Draw **one picture** of the pig, facing **right**. The bottom quarter of your drawing is the **legs** (below the pink dashed line).
 - The maker makes the 😐 **Idle**, 🚶 **Walk** and 💥 **Attack** animations by itself. Watch them on the right!
 - Tools: ✏️ pencil (B), 🧽 eraser (E, or right click), 🪣 fill (G), 💉 pick a colour (I), ↩️ undo (Ctrl+Z), ↪️ redo (Ctrl+Y), ↔️ flip, 🗑️ clear.
 - **Start from** lets you copy another pig's picture, or a plain pig, then change it.

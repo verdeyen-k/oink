@@ -61,10 +61,13 @@
     gctx.beginPath();
     for (let i = 1; i < S; i++) { gctx.moveTo(i * CELL + .5, 0); gctx.lineTo(i * CELL + .5, grid.height); gctx.moveTo(0, i * CELL + .5); gctx.lineTo(grid.width, i * CELL + .5); }
     gctx.stroke();
-    // the legs line: everything under it is legs in the walk animation
-    gctx.strokeStyle = '#ff5c8a55'; gctx.setLineDash([6, 6]);
-    gctx.beginPath(); gctx.moveTo(0, grid.height * 0.75); gctx.lineTo(grid.width, grid.height * 0.75); gctx.stroke();
-    gctx.setLineDash([]);
+    // the legs line: everything under it is legs in the walk animation (the bottom quarter of the drawing)
+    const leg = A.legLine(pic);
+    if (leg !== null) {
+      gctx.strokeStyle = '#ff5c8acc'; gctx.lineWidth = 2; gctx.setLineDash([8, 6]);
+      gctx.beginPath(); gctx.moveTo(0, leg * CELL); gctx.lineTo(grid.width, leg * CELL); gctx.stroke();
+      gctx.setLineDash([]);
+    }
   }
 
   // ---- the pig list ----
