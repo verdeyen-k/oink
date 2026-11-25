@@ -122,8 +122,7 @@
     ui.append(el('h2', {}, `🏠 Your pig barn (${barn.pigs.length} pigs)`));
     ui.append(el('div', { class: 'row' },
       el('button', { class: 'btn' + (barnTab === 'team' ? ' on' : ''), onclick: () => { barnTab = 'team'; mergePick = []; showBarn(); } }, '👥 Pick team'),
-      el('button', { class: 'btn' + (barnTab === 'merge' ? ' on' : ''), onclick: () => { barnTab = 'merge'; mergePick = []; showBarn(); } }, '🔀 Merge pigs'),
-      el('a', { class: 'btn', href: 'maker.html', style: 'text-decoration:none' }, '🎨 Pig maker')));
+      el('button', { class: 'btn' + (barnTab === 'merge' ? ' on' : ''), onclick: () => { barnTab = 'merge'; mergePick = []; showBarn(); } }, '🔀 Merge pigs')));
     const bar = el('div', { id: 'mergeBar', class: 'row', style: 'margin:10px 0' });
     if (barnTab === 'team') bar.append(el('span', { class: 'muted' }, 'Tap a pig to put it in your team (or take it out).'));
     else {

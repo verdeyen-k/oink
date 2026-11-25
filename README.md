@@ -56,7 +56,7 @@ Online play is coming next.
 
 ## 🎨 The pig maker
 
-Open **`maker.html`**.
+Open **`maker.html`** on the computer (it's not linked from the game, because on the website it only changes pigs in your own browser).
 
 - Pick a pig from the list on the left (46: all 45 pigs plus the 🐗 Mega Boar). Use the element buttons to only show pigs with that element.
 - Draw **one picture** of the pig, facing **right**. The bottom quarter of your drawing is the **legs** (below the pink dashed line).
