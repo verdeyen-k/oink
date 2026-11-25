@@ -1,0 +1,1 @@
+{"name":"oink","private":true,"scripts":{"test":"node --test tests/"}}
