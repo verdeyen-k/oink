@@ -3,82 +3,101 @@ const assert = require('node:assert');
 const A = require('../pigart.js');
 const E = require('../elements.js');
 
-const used = pig => new Set(Object.values(pig.anims).flat(2).filter(Boolean));
+function dot(x, y, c = '#ff0000') { const f = A.blankFrame(); f[y * 32 + x] = c; return f; }
+const find = (f, c) => { const i = f.indexOf(c); return i < 0 ? null : [i % 32, Math.floor(i / 32)]; };
 
-test('a blank pig has 3 animations of 4 see-through frames', () => {
+test('a blank pig is one see-through 32x32 picture', () => {
   const p = A.blankPig();
-  assert.deepStrictEqual(Object.keys(p.anims), ['idle', 'walk', 'attack']);
-  for (const a of A.ANIMS) {
-    assert.strictEqual(p.anims[a].length, 4);
-    assert.strictEqual(p.anims[a][0].length, 1024);
-    assert.ok(p.anims[a][0].every(c => c === ''));
-  }
+  assert.strictEqual(p.picture.length, 1024);
+  assert.ok(p.picture.every(c => c === ''));
+  assert.ok(!A.isDrawn(p));
 });
 
-test('the default pig is drawn in its colour and its animations move', () => {
-  const p = A.defaultPig('#ff6b3d');
-  assert.ok(used(p).has('#ff6b3d'));
-  for (const a of A.ANIMS) assert.notDeepStrictEqual(p.anims[a][0], p.anims[a][1], a);
+test('the plain pig is drawn in its colour', () => {
+  const p = A.plainPig('#ff6b3d');
+  assert.ok(p.picture.includes('#ff6b3d'));
+  assert.ok(A.isDrawn(p));
+});
+
+test('animate makes idle, walk and attack with 4 frames each', () => {
+  const anims = A.animate(A.plainPig('#4dabf7').picture);
+  assert.deepStrictEqual(Object.keys(anims), ['idle', 'walk', 'attack']);
+  for (const a of A.ANIMS) {
+    assert.strictEqual(anims[a].length, 4, a);
+    assert.ok(anims[a].every(f => f.length === 1024), a);
+  }
+  assert.notDeepStrictEqual(anims.walk[0], anims.walk[2]);
+});
+
+test('idle bobs down 1 pixel, attack lunges right', () => {
+  const anims = A.animate(dot(10, 5));
+  assert.deepStrictEqual(find(anims.idle[0], '#ff0000'), [10, 5]);
+  assert.deepStrictEqual(find(anims.idle[2], '#ff0000'), [10, 6]);
+  assert.deepStrictEqual(find(anims.attack[1], '#ff0000'), [9, 5]);
+  assert.deepStrictEqual(find(anims.attack[2], '#ff0000'), [13, 5]);
+});
+
+test('walk: the legs scissor, the body bobs', () => {
+  const f = A.blankFrame();
+  for (let y = 0; y < 8; y++) for (let x = 10; x < 20; x++) f[y * 32 + x] = '#00ff00'; // body
+  f[3 * 32 + 15] = '#ffff00'; // a body pixel
+  f[7 * 32 + 11] = '#ff0000'; // a back leg pixel (bottom quarter, left half)
+  f[7 * 32 + 18] = '#0000ff'; // a front leg pixel (bottom quarter, right half)
+  const w = A.animate(f).walk;
+  assert.deepStrictEqual(find(w[0], '#ff0000'), [10, 7]);
+  assert.deepStrictEqual(find(w[0], '#0000ff'), [19, 7]);
+  assert.deepStrictEqual(find(w[2], '#ff0000'), [12, 7]);
+  assert.deepStrictEqual(find(w[2], '#0000ff'), [17, 7]);
+  assert.deepStrictEqual(find(w[1], '#ffff00'), [15, 2]); // body bobs up 1
+  assert.deepStrictEqual(find(w[1], '#ff0000'), [11, 7]); // legs stay on the ground
+});
+
+test('pixels moved off the edge are dropped, not wrapped', () => {
+  const anims = A.animate(dot(31, 31));
+  assert.strictEqual(find(anims.attack[2], '#ff0000'), null);
+  assert.strictEqual(anims.attack[2].filter(Boolean).length, 0);
+});
+
+test('a blank picture makes blank animations', () => {
+  const anims = A.animate(A.blankFrame());
+  for (const a of A.ANIMS) assert.ok(anims[a].every(f => f.every(c => c === '')));
 });
 
 test('encode then decode gives back the same pig', () => {
-  const p = A.defaultPig('#4dabf7');
+  const p = A.plainPig('#4dabf7');
   p.name = 'Splashy';
-  const back = A.decodePig(JSON.parse(JSON.stringify(A.encodePig(p))));
-  assert.deepStrictEqual(back, p);
+  assert.deepStrictEqual(A.decodePig(JSON.parse(JSON.stringify(A.encodePig(p)))), p);
 });
 
 test('decode refuses broken pigs', () => {
-  const good = A.encodePig(A.defaultPig('#4dabf7'));
-  const short = JSON.parse(JSON.stringify(good)); short.anims.idle[0] = short.anims.idle[0].slice(1);
-  assert.throws(() => A.decodePig(short));
-  const noWalk = JSON.parse(JSON.stringify(good)); delete noWalk.anims.walk;
-  assert.throws(() => A.decodePig(noWalk));
-  const badChar = JSON.parse(JSON.stringify(good)); badChar.anims.idle[0] = '!' + badChar.anims.idle[0].slice(1);
-  assert.throws(() => A.decodePig(badChar));
-  const nine = JSON.parse(JSON.stringify(good)); nine.anims.idle = Array(9).fill(good.anims.idle[0]);
-  assert.throws(() => A.decodePig(nine));
-  assert.throws(() => A.decodePig(null));
+  const good = A.encodePig(A.plainPig('#4dabf7'));
+  const copy = () => JSON.parse(JSON.stringify(good));
+  const short = copy(); short.picture = short.picture.slice(1);
+  const badChar = copy(); badChar.picture = '!' + badChar.picture.slice(1);
+  const badColour = copy(); badColour.palette[0] = 'red';
+  const noPic = copy(); delete noPic.picture;
+  for (const bad of [short, badChar, badColour, noPic, null, 'pig']) assert.throws(() => A.decodePig(bad));
 });
 
-test('main colour skips black even when black is used most', () => {
-  const p = A.blankPig();
-  const f = p.anims.idle[0];
-  for (let i = 0; i < 300; i++) f[i] = '#000000';
-  for (let i = 300; i < 400; i++) f[i] = '#ff0000';
-  assert.strictEqual(A.mainColor(p), '#ff0000');
-  assert.strictEqual(A.mainColor(A.blankPig()), null);
+test('pigs.js files: export then load', () => {
+  const pigs = { 'fire+water': A.plainPig('#ff6b3d'), megaboar: A.plainPig('#222222') };
+  pigs['fire+water'].name = 'Steamy';
+  const text = A.exportPigsFile(pigs);
+  assert.ok(text.startsWith('window.OINK_PIGS = '));
+  assert.deepStrictEqual(A.parsePigsFile(text), pigs);
+  assert.deepStrictEqual(A.parsePigsFile(JSON.stringify(JSON.parse(text.slice(19, -2)))), pigs); // plain .json works too
 });
 
-test('automatic mix: fire on the left, water on the right', () => {
-  const m = A.autoMix('fire+water', {});
-  const fire = E.BY_ID.fire.color, water = E.BY_ID.water.color;
-  const f = m.anims.idle[0];
-  let left = null, right = null;
-  for (let x = 0; x < 32 && !left; x++) for (let y = 0; y < 32; y++) { const c = f[y * 32 + x]; if (c === fire || c === water) { left = c; break; } }
-  for (let x = 31; x >= 0 && !right; x--) for (let y = 0; y < 32; y++) { const c = f[y * 32 + x]; if (c === fire || c === water) { right = c; break; } }
-  assert.strictEqual(left, fire);
-  assert.strictEqual(right, water);
+test('pigs.js files: blank pigs are not exported', () => {
+  const text = A.exportPigsFile({ fire: A.blankPig(), ice: A.plainPig('#a5e8ff') });
+  assert.deepStrictEqual(Object.keys(A.parsePigsFile(text)), ['ice']);
 });
 
-test('automatic mix uses the hand-drawn colours of one-element pigs', () => {
-  const water = A.blankPig();
-  water.anims.idle[0].fill('#3399ee', 0, 200);
-  const m = A.autoMix('fire+water', { water });
-  assert.ok(used(m).has('#3399ee'));
-  assert.ok(used(m).has(E.BY_ID.fire.color));
-});
-
-test('three elements make three stripes', () => {
-  const u = used(A.autoMix('fire+ice+water', {}));
-  for (const id of ['fire', 'ice', 'water']) assert.ok(u.has(E.BY_ID[id].color), id);
-});
-
-test('resolvePig: drawn pigs win, Mega Boar starts blank', () => {
-  const p = A.blankPig();
-  assert.deepStrictEqual(A.resolvePig('fire+water', { 'fire+water': p }), { pig: p, auto: false });
-  assert.strictEqual(A.resolvePig('fire+water', {}).auto, true);
-  assert.strictEqual(A.resolvePig('fire', {}).auto, true);
-  const mb = A.resolvePig('megaboar', {});
-  assert.strictEqual(used(mb.pig).size, 0);
+test('pigs.js files: bad files are refused', () => {
+  assert.throws(() => A.parsePigsFile('hello'));
+  assert.throws(() => A.parsePigsFile('window.OINK_PIGS = [];'));
+  const good = A.encodePig(A.plainPig('#ff6b3d'));
+  assert.throws(() => A.parsePigsFile(JSON.stringify({ 'fire+ice+plant+rock': good })));
+  assert.throws(() => A.parsePigsFile(JSON.stringify({ fire: { palette: [] } })));
+  assert.ok(E.allPigKeys().includes('fire'));
 });

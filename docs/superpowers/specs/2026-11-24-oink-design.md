@@ -41,44 +41,41 @@ The game itself (fighting, AI, online, modes) is **not** part of this build. It 
 
 ## Approaches considered (for the maker)
 
-- **A. Draw every pig from scratch.** 129 pigs × 3 animations × ~4 frames ≈ 1,500 pictures. Too much blank-grid work.
-- **B. A head start for mixed pigs (picked by the kid).** The kid draws the 9 one-element pigs, and each mixed pig
-  starts as an automatic mix the kid can change or redraw.
+- **A. Draw every pig from scratch (picked by the kid, after first picking B).** Every pig starts blank, and the kid
+  draws **one picture** of each pig. The maker makes the animations from that picture by itself.
+- **B. A head start for mixed pigs.** Mixed pigs would start as a stripy mix of the one-element pigs. The kid
+  changed his mind: he wants to draw each pig himself.
+- Drawing every animation frame by hand (129 pigs × 3 animations × ~4 frames, about 1,500 pictures) was too much work.
 
 ## The pig maker (this build)
 
 Files: `oink/maker.html`, `oink/maker.js`, `oink/elements.js` (the element table and who beats who, shared with
-the future game). It's plain HTML + JS with no build step, Fredoka font and a chunky, colourful style like the other games.
+the future game) and `oink/pigart.js` (the automatic animations and the save format, also shared). It's plain HTML + JS
+with no build step, Fredoka font and a chunky, colourful style like the other games.
 
 ### Layout
 - **Left: pig list.** 130 entries: 9 one-element pigs, 36 two-element pigs, 84 three-element pigs and the 🐗 Mega Boar,
-  in sections, each shown by its element icons and a little thumbnail. A ✅ marks pigs the kid has drawn, an "auto" badge marks
-  pigs still using the automatic mix, and a counter at the top shows "12 / 130 drawn". You can filter the list by element.
-- **Middle: drawing grid.** 32×32 pixel art. Tools: pencil, eraser, fill bucket, colour picker (eyedropper),
-  undo/redo, clear, mirror-flip. Palette: 16 starter colours that include each element's colour, plus a custom
-  colour chooser. Transparent background shown as a checkerboard.
-- **Animation bar.** 3 tabs: 😐 Idle, 🚶 Walk, 💥 Attack. Each starts with 4 frames, and you can add, copy, delete or reorder
-  frames (1–8 per animation). "Onion skin" shows the previous frame faintly. A preview box plays the animation, with a speed slider.
+  in sections, each shown by its element icons and a little thumbnail. A ✅ marks pigs that are drawn, and a counter at the top
+  shows "12 / 130 drawn". You can filter the list by element.
+- **Middle: drawing grid.** 32×32 pixel art, one picture per pig, facing right. Tools: pencil, eraser, fill bucket,
+  colour picker (eyedropper), undo/redo, clear, mirror-flip. Palette: 16 starter colours that include each element's colour,
+  plus a custom colour chooser. Transparent background shown as a checkerboard.
+- **Right: animation previews.** 😐 Idle, 🚶 Walk and 💥 Attack play live, made automatically from the picture:
+  - Idle: the pig bobs gently up and down.
+  - Walk: the bottom quarter of the picture (the legs) scissors back and forth while the body bobs.
+  - Attack: the pig pulls back, then lunges forward.
 - **Pig name box** (optional) for giving each pig a name. **(my call)**
-
-### The head start (approach B)
-- A pig's elements are always kept in circle order (Fire, Ice, Plant, Rock, Air, Electric, Dark, Water, Common), and its key is
-  the element ids joined with `+`, e.g. `fire+water`.
-- An undrawn mixed pig shows an **automatic mix**: its first element's frames, with the body recoloured in stripes
-  (left half / right half for 2 elements, thirds for 3), using each element pig's main colour. The "main colour" is the most-used colour that
-  isn't black/outline.
-- The automatic mix updates if the kid changes the one-element pigs. As soon as the kid draws on a mixed pig, it becomes
-  their own drawing ("auto" badge goes away). A **"Start again from the mix"** button brings the automatic mix back.
-- **"Copy from…"** lets any pig start from any other pig's drawing.
-- The Mega Boar starts blank (in the game it's drawn big and black; the kid draws it).
+- **"Copy from…"** lets a pig start from any other pig's picture, or from a built-in **plain pig** in its element's
+  colour. **(my call)**
 
 ### Saving
 - Saves by itself to the browser (localStorage) after every change.
-- **Export `pigs.js`**: downloads a file the game will load (`window.OINK_PIGS = {...}`). Frames are stored compactly
-  (palette + one string per frame). Only hand-drawn pigs are stored; the game makes the automatic mixes itself with the same code.
+- **Export `pigs.js`**: downloads a file the game will load (`window.OINK_PIGS = {...}`). Each picture is stored compactly
+  (a palette plus one string). Only the pictures are stored; the game makes the animations with the same code (`pigart.js`).
 - **Load file**: loads a `pigs.js` back in (for moving to another computer or restoring a backup).
 - Sprites are drawn facing right. The game flips them when a pig walks left. **(my call)**
 - The attack animation is just the pig. The game draws the fire/water/etc. blast. **(my call)**
+- Undrawn pigs can't be used in the game until they are drawn (the game will decide what to show; maybe a plain pig). **(my call)**
 
 ### Not in this build
 - The fighting game, merging screen, modes, AI, online play.

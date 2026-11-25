@@ -1,17 +1,17 @@
-// Oink: pig pictures. A frame is 32x32 = 1024 colours ('#rrggbb', or '' for see-through), index y*32+x.
-// The built-in default pig, the automatic mixes for undrawn pigs, and the save format.
+// Oink: pig pictures. Each pig is ONE 32x32 picture (facing right). The animations are made from it automatically.
+// A picture is 1024 colours ('#rrggbb', or '' for see-through), index y*32+x.
 // Works in the browser (window.OinkArt, needs elements.js first) and in Node.
 (function (root) {
   const E = (typeof module !== 'undefined' && module.exports) ? require('./elements.js') : root.OinkElements;
   const SIZE = 32, CELLS = SIZE * SIZE;
   const ANIMS = ['idle', 'walk', 'attack'];
-  const START_FRAMES = 4, MIN_FRAMES = 1, MAX_FRAMES = 8;
   const CHARS = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
   const OUTLINE = '#2b1d24', EYE = '#1a1a1a';
+  const PREFIX = 'window.OINK_PIGS = ';
 
   const blankFrame = () => Array(CELLS).fill('');
-  const blankPig = () => ({ name: '', anims: Object.fromEntries(ANIMS.map(a => [a, Array.from({ length: START_FRAMES }, blankFrame)])) });
-  const clonePig = p => ({ name: p.name || '', anims: Object.fromEntries(ANIMS.map(a => [a, p.anims[a].map(f => f.slice())])) });
+  const blankPig = () => ({ name: '', picture: blankFrame() });
+  const isDrawn = pig => !!pig && pig.picture.some(Boolean);
 
   // ---- colours ----
   const rgb = c => [1, 3, 5].map(i => parseInt(c.slice(i, i + 2), 16));
@@ -19,98 +19,68 @@
   const mixWith = (c, to, t) => hex(rgb(c).map((v, i) => v + (to[i] - v) * t));
   const lighten = (c, t) => mixWith(c, [255, 255, 255], t);
   const darken = (c, t) => mixWith(c, [0, 0, 0], t);
-  const luminance = c => { const [r, g, b] = rgb(c); return (0.299 * r + 0.587 * g + 0.114 * b) / 255; };
   const dist = (a, b) => { const x = rgb(a), y = rgb(b); return (x[0] - y[0]) ** 2 + (x[1] - y[1]) ** 2 + (x[2] - y[2]) ** 2; };
 
-  // ---- the default pig (faces right) ----
-  function drawPig(color, { dy = 0, dx = 0, legs = 0, mouth = false } = {}) {
+  // ---- a plain pig to start from (faces right) ----
+  function plainPig(color) {
     const f = blankFrame();
-    const body = color, snout = lighten(color, 0.4), ear = darken(color, 0.25), leg = darken(color, 0.15);
-    const put = (x, y, c) => { x += dx; y += dy; if (x >= 0 && x < SIZE && y >= 0 && y < SIZE) f[y * SIZE + x] = c; };
-    // legs: back pair and front pair lift on alternate walk frames
-    const legTop = 22;
-    [[8, 1], [11, 2], [18, 1], [21, 2]].forEach(([x, pair]) => {
-      const lift = legs && legs === pair ? 1 : 0;
-      for (let y = legTop; y < 27 - lift; y++) for (let i = 0; i < 2; i++) put(x + i, y, leg);
-    });
-    for (let y = 0; y < SIZE; y++) for (let x = 0; x < SIZE; x++) {
-      const inBody = ((x - 14) / 10) ** 2 + ((y - 17) / 6.5) ** 2 <= 1;
-      const inHead = (x - 23) ** 2 + (y - 14) ** 2 <= 30;
-      if (inBody || inHead) put(x, y, body);
-    }
-    for (let y = 13; y <= 17; y++) for (let x = 28; x <= 29; x++) put(x, y, snout);   // snout
-    put(29, 14, OUTLINE); put(29, 16, OUTLINE);                                       // nostrils
-    if (mouth) { put(27, 18, OUTLINE); put(28, 18, OUTLINE); }
-    for (let y = 7; y <= 10; y++) for (let x = 20; x <= 20 + (y - 7); x++) put(x, y, ear); // ear
-    put(25, 12, EYE); put(25, 13, EYE);                                                  // eye
-    put(3, 13, ear); put(4, 14, ear); put(3, 15, ear);                                   // curly tail
-    // dark outline round everything
+    const snout = lighten(color, 0.4), ear = darken(color, 0.25), leg = darken(color, 0.15);
+    const put = (x, y, c) => { if (x >= 0 && x < SIZE && y >= 0 && y < SIZE) f[y * SIZE + x] = c; };
+    for (const x of [8, 11, 18, 21]) for (let y = 22; y < 27; y++) { put(x, y, leg); put(x + 1, y, leg); }
+    for (let y = 0; y < SIZE; y++) for (let x = 0; x < SIZE; x++)
+      if (((x - 14) / 10) ** 2 + ((y - 17) / 6.5) ** 2 <= 1 || (x - 23) ** 2 + (y - 14) ** 2 <= 30) put(x, y, color);
+    for (let y = 13; y <= 17; y++) { put(28, y, snout); put(29, y, snout); }
+    put(29, 14, OUTLINE); put(29, 16, OUTLINE);
+    for (let y = 7; y <= 10; y++) for (let x = 20; x <= 20 + (y - 7); x++) put(x, y, ear);
+    put(25, 12, EYE); put(25, 13, EYE);
+    put(3, 13, ear); put(4, 14, ear); put(3, 15, ear);
     const out = f.slice();
-    for (let y = 0; y < SIZE; y++) for (let x = 0; x < SIZE; x++) {
-      if (f[y * SIZE + x]) continue;
-      const near = [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([a, b]) => {
+    for (let i = 0; i < CELLS; i++) {
+      if (f[i]) continue;
+      const x = i % SIZE, y = (i - x) / SIZE;
+      if ([[1, 0], [-1, 0], [0, 1], [0, -1]].some(([a, b]) => {
         const nx = x + a, ny = y + b;
         return nx >= 0 && nx < SIZE && ny >= 0 && ny < SIZE && f[ny * SIZE + nx] && f[ny * SIZE + nx] !== OUTLINE;
-      });
-      if (near) out[y * SIZE + x] = OUTLINE;
+      })) out[i] = OUTLINE;
     }
-    return out;
+    return { name: '', picture: out };
   }
 
-  function defaultPig(color) {
+  // ---- automatic animations ----
+  // move(x, y) says where each pixel goes; pixels moved off the grid are dropped.
+  function remap(pic, move) {
+    const f = blankFrame();
+    for (let i = 0; i < CELLS; i++) {
+      if (!pic[i]) continue;
+      const x = i % SIZE, y = (i - x) / SIZE;
+      const [nx, ny] = move(x, y);
+      if (nx >= 0 && nx < SIZE && ny >= 0 && ny < SIZE) f[ny * SIZE + nx] = pic[i];
+    }
+    return f;
+  }
+
+  function animate(pic) {
+    // The legs are the bottom quarter of the drawing; back legs are the left half, front legs the right half.
+    let minX = SIZE, maxX = -1, minY = SIZE, maxY = -1;
+    for (let i = 0; i < CELLS; i++) if (pic[i]) {
+      const x = i % SIZE, y = (i - x) / SIZE;
+      minX = Math.min(minX, x); maxX = Math.max(maxX, x); minY = Math.min(minY, y); maxY = Math.max(maxY, y);
+    }
+    const legTop = minY + Math.ceil((maxY - minY + 1) * 0.75);
+    const midX = Math.floor((minX + maxX + 1) / 2);
+    const walkFrame = (spread, bob) => remap(pic, (x, y) =>
+      y >= legTop ? [x + (x < midX ? -spread : spread), y] : [x, y + bob]);
     return {
-      name: '',
-      anims: {
-        idle: [0, 1, 1, 0].map(dy => drawPig(color, { dy })),
-        walk: [1, 0, 2, 0].map((legs, i) => drawPig(color, { legs, dy: i % 2 ? 0 : -1 })),
-        attack: [0, 2, 3, 0].map((dx, i) => drawPig(color, { dx, mouth: i === 1 || i === 2 })),
-      },
+      idle: [0, 0, 1, 1].map(dy => remap(pic, (x, y) => [x, y + dy])),
+      walk: [walkFrame(1, 0), walkFrame(0, -1), walkFrame(-1, 0), walkFrame(0, -1)],
+      attack: [0, -1, 3, 1].map(dx => remap(pic, (x, y) => [x + dx, y])),
     };
-  }
-
-  // The most-used colour that isn't see-through or very dark (outlines and eyes don't count).
-  function mainColor(pig) {
-    const count = new Map();
-    for (const a of ANIMS) for (const f of pig.anims[a]) for (const c of f)
-      if (c && luminance(c) >= 0.2) count.set(c, (count.get(c) || 0) + 1);
-    let best = null, n = 0;
-    for (const [c, k] of count) if (k > n) { best = c; n = k; }
-    return best;
-  }
-
-  // What a pig looks like right now: the kid's drawing if there is one, otherwise an automatic one.
-  function resolvePig(key, pigs) {
-    if (pigs[key]) return { pig: pigs[key], auto: false };
-    if (key === E.MEGA) return { pig: blankPig(), auto: true };
-    const ids = E.keyElements(key);
-    if (ids.length === 1) return { pig: defaultPig(E.BY_ID[ids[0]].color), auto: true };
-    return { pig: autoMix(key, pigs), auto: true };
-  }
-
-  // A mixed pig starts as its first element's pig with the body in stripes, one stripe per element.
-  function autoMix(key, pigs) {
-    const ids = E.keyElements(key);
-    const singles = ids.map(id => resolvePig(id, pigs).pig);
-    const colors = ids.map((id, i) => mainColor(singles[i]) || E.BY_ID[id].color);
-    const base = clonePig(singles[0]);
-    base.name = '';
-    const match = colors[0], n = ids.length;
-    for (const a of ANIMS) base.anims[a] = base.anims[a].map(f => {
-      let minX = SIZE, maxX = -1;
-      for (let i = 0; i < CELLS; i++) if (f[i]) { const x = i % SIZE; minX = Math.min(minX, x); maxX = Math.max(maxX, x); }
-      const width = maxX - minX + 1;
-      return f.map((c, i) => c === match ? colors[Math.min(n - 1, Math.floor((i % SIZE - minX) * n / width))] : c);
-    });
-    return base;
   }
 
   // ---- save format: a palette plus one character per pixel ('.' = see-through) ----
   function encodePig(pig) {
-    const palette = [];
-    const index = new Map();
-    for (const a of ANIMS) for (const f of pig.anims[a]) for (const c of f) {
-      if (c && !index.has(c) && palette.length < CHARS.length) { index.set(c, palette.length); palette.push(c); }
-    }
+    const palette = [], index = new Map();
+    for (const c of pig.picture) if (c && !index.has(c) && palette.length < CHARS.length) { index.set(c, palette.length); palette.push(c); }
     const code = c => {
       if (!c) return '.';
       if (!index.has(c)) { // more than 62 colours: use the closest one
@@ -119,34 +89,53 @@
       }
       return CHARS[index.get(c)];
     };
-    return { name: pig.name || '', palette, anims: Object.fromEntries(ANIMS.map(a => [a, pig.anims[a].map(f => f.map(code).join(''))])) };
+    return { name: pig.name || '', palette, picture: pig.picture.map(code).join('') };
   }
 
   function decodePig(obj) {
     if (!obj || typeof obj !== 'object') throw new Error('not a pig');
-    const palette = obj.palette;
+    const { palette, picture } = obj;
     if (!Array.isArray(palette) || palette.length > CHARS.length || !palette.every(c => /^#[0-9a-fA-F]{6}$/.test(c)))
       throw new Error('bad colours');
-    if (!obj.anims || typeof obj.anims !== 'object') throw new Error('no animations');
-    const anims = {};
-    for (const a of ANIMS) {
-      const frames = obj.anims[a];
-      if (!Array.isArray(frames) || frames.length < MIN_FRAMES || frames.length > MAX_FRAMES) throw new Error(`bad ${a} animation`);
-      anims[a] = frames.map(s => {
-        if (typeof s !== 'string' || s.length !== CELLS) throw new Error(`bad ${a} frame`);
-        return Array.from(s, ch => {
-          if (ch === '.') return '';
-          const i = CHARS.indexOf(ch);
-          if (i < 0 || i >= palette.length) throw new Error(`bad ${a} pixel`);
-          return palette[i].toLowerCase();
-        });
-      });
-    }
-    return { name: typeof obj.name === 'string' ? obj.name.slice(0, 40) : '', anims };
+    if (typeof picture !== 'string' || picture.length !== CELLS) throw new Error('bad picture');
+    return {
+      name: typeof obj.name === 'string' ? obj.name.slice(0, 40) : '',
+      picture: Array.from(picture, ch => {
+        if (ch === '.') return '';
+        const i = CHARS.indexOf(ch);
+        if (i < 0 || i >= palette.length) throw new Error('bad pixel');
+        return palette[i].toLowerCase();
+      }),
+    };
   }
 
-  const api = { SIZE, CELLS, ANIMS, START_FRAMES, MIN_FRAMES, MAX_FRAMES, OUTLINE, blankFrame, blankPig, clonePig, defaultPig,
-    mainColor, resolvePig, autoMix, encodePig, decodePig, lighten, darken };
+  const validKeys = () => new Set([...E.allPigKeys(), E.MEGA]);
+
+  // The file the game loads. Only drawn pigs go in it.
+  function exportPigsFile(pigs) {
+    const out = {};
+    for (const key of [...E.allPigKeys(), E.MEGA]) if (isDrawn(pigs[key])) out[key] = encodePig(pigs[key]);
+    return PREFIX + JSON.stringify(out) + ';\n';
+  }
+
+  // Reads a pigs.js (or plain .json) file. Throws if anything in it is wrong, so nothing half-loads.
+  function parsePigsFile(text) {
+    let body = String(text).trim();
+    if (body.startsWith(PREFIX)) body = body.slice(PREFIX.length);
+    body = body.replace(/;\s*$/, '');
+    let obj;
+    try { obj = JSON.parse(body); } catch (e) { throw new Error("That isn't a pigs file"); }
+    if (!obj || typeof obj !== 'object' || Array.isArray(obj)) throw new Error("That isn't a pigs file");
+    const keys = validKeys(), pigs = {};
+    for (const [key, val] of Object.entries(obj)) {
+      if (!keys.has(key)) throw new Error(`Unknown pig: ${key}`);
+      try { pigs[key] = decodePig(val); } catch (e) { throw new Error(`The ${E.pigName(key)} pig is broken`); }
+    }
+    return pigs;
+  }
+
+  const api = { SIZE, CELLS, ANIMS, OUTLINE, blankFrame, blankPig, isDrawn, plainPig, animate,
+    encodePig, decodePig, exportPigsFile, parsePigsFile, lighten, darken };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.OinkArt = api;
 })(this);
