@@ -63,7 +63,7 @@ with no build step, Fredoka font and a chunky, colourful style like the other ga
 - **Right: animation previews.** 😐 Idle, 🚶 Walk and 💥 Attack play live, made automatically from the picture:
   - Idle: the pig bobs gently up and down.
   - Walk: the bottom quarter of the picture (the legs) scissors back and forth while the body bobs.
-  - Attack: the pig pulls back, then lunges forward.
+  - Attack: the pig lunges to the right.
 - **Pig name box** (optional) for giving each pig a name. **(my call)**
 - **"Copy from…"** lets a pig start from any other pig's picture, or from a built-in **plain pig** in its element's
   colour. **(my call)**

@@ -83,7 +83,7 @@
     return {
       idle: [0, 0, 1, 1].map(dy => remap(pic, (x, y) => [x, y + dy])),
       walk: [walkFrame(1, 0), walkFrame(0, -1), walkFrame(-1, 0), walkFrame(0, -1)],
-      attack: [0, -1, 3, 1].map(dx => remap(pic, (x, y) => [x + dx, y])),
+      attack: [0, 2, 4, 2].map(dx => remap(pic, (x, y) => [x + dx, y])),
     };
   }
 

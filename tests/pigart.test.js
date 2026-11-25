@@ -29,12 +29,13 @@ test('animate makes idle, walk and attack with 4 frames each', () => {
   assert.notDeepStrictEqual(anims.walk[0], anims.walk[2]);
 });
 
-test('idle bobs down 1 pixel, attack lunges right', () => {
+test('idle bobs down 1 pixel, attack only ever moves right', () => {
   const anims = A.animate(dot(10, 5));
   assert.deepStrictEqual(find(anims.idle[0], '#ff0000'), [10, 5]);
   assert.deepStrictEqual(find(anims.idle[2], '#ff0000'), [10, 6]);
-  assert.deepStrictEqual(find(anims.attack[1], '#ff0000'), [9, 5]);
-  assert.deepStrictEqual(find(anims.attack[2], '#ff0000'), [13, 5]);
+  assert.deepStrictEqual(find(anims.attack[1], '#ff0000'), [12, 5]);
+  assert.deepStrictEqual(find(anims.attack[2], '#ff0000'), [14, 5]);
+  assert.deepStrictEqual(find(anims.attack[3], '#ff0000'), [12, 5]);
 });
 
 test('walk: the legs scissor, the body bobs', () => {
